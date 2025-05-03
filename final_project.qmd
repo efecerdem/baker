@@ -1,0 +1,69 @@
+---
+title: "Crime_analysis"
+format: html
+editor: visual
+---
+
+Two questions are:
+
+1.  Is there a statistically significant difference in the average victim age between burglary and vehicle theft crimes?
+2.  Does the average victim age differ significantly across burglary, vehicle theft, and arson crimes?
+
+```{r}
+
+library(tidyverse)
+
+crime_data <- read_csv("C:/Users/efece/Downloads/Crime_Data_from_2020_to_Present.csv")
+
+
+glimpse(crime_data)
+
+ggplot(crime_data, aes(x = `Vict Age`)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "black") +
+  labs(title = "Histogram of Victim Age", x = "Victim Age", y = "Count")
+
+ggplot(crime_data, aes(x = `Vict Sex`, y = `Vict Age`, fill = `Vict Sex`)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Victim Age by Sex", x = "Sex", y = "Victim Age")
+
+library(dplyr)
+
+summary_stats <- crime_data %>%
+  group_by(`Vict Sex`) %>%
+  summarise(
+    mean_age = mean(`Vict Age`, na.rm = TRUE),
+    sd_age = sd(`Vict Age`, na.rm = TRUE),
+    min_age = min(`Vict Age`, na.rm = TRUE),
+    max_age = max(`Vict Age`, na.rm = TRUE)
+  )
+print(summary_stats)
+
+
+
+subset_data <- subset(crime_data, `Crm Cd Desc` %in% c("BURGLARY", "VEHICLE - STOLEN") & `Vict Age` > 0)
+
+
+t.test(`Vict Age` ~ `Crm Cd Desc`, data = subset_data)
+
+
+
+
+anova_data <- subset(crime_data, `Crm Cd Desc` %in% c("BURGLARY", "VEHICLE - STOLEN", "ARSON") & `Vict Age` > 0)
+
+
+anova_result <- aov(`Vict Age` ~ `Crm Cd Desc`, data = anova_data)
+summary(anova_result)
+
+library(ggplot2)
+
+ggplot(anova_data, aes(x = `Crm Cd Desc`, y = `Vict Age`)) +
+  geom_boxplot() +
+  theme_minimal() +
+  labs(title = "Victim Age by Crime Type", x = "Crime Type", y = "Victim Age")
+```
+
+Test conclusions.
+
+In this analysis, we performed both descriptive and inferential statistical procedures to explore crime data from 2020 to the present. Descriptive analysis included visualizing the distribution of numeric variables through histograms and boxplots, and summarizing statistics like mean and standard deviation to understand the spread and central tendency of various crime-related features. We grouped the data based on categorical variables such as crime type or district to gain insights into patterns across different categories.
+
+Inferential statistics included conducting a t-test and an ANOVA to determine whether there were statistically significant differences in numeric crime-related metrics (such as response time or number of crimes) across different groups. The t-test compared two groups, while the ANOVA assessed differences among multiple groups. Based on these tests, we could infer whether the observed differences are likely due to random chance or reflect a meaningful pattern in the population. These results help inform data-driven decisions for law enforcement resource allocation and policy development.
